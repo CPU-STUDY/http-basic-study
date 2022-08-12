@@ -222,3 +222,29 @@ https://spotted-oatmeal-52f.notion.site/3-HTTP-35a6534a1ad541a1880209623636284a
 세션 4 노션 링크
 https://spotted-oatmeal-52f.notion.site/4-HTTP-b6a5ae88028c4e5893e511003c96887e
 
+
+## 번외) PATCH 메서드의 불안정성?
+PATCH 메서드를 사용하게 되면 리소스 부분 변경이 가능하다. 
+예를 들어
+{
+“name”: “홍길동”
+"age": 50 
+}
+이라는 리소스에서 age를 20으로 바꾸려면 이렇게 보내면 된다. 
+{
+“age”: 20
+}
+그런데 ORM을 쓴다거나 요청 mapping에서 DTO라는 객체를 받게 되면, name에 해당하는 필드가 null로 적용된다. 이는 kotlin, java등 여러 언어에서 parsing할 때 나오는 현상이다. 이러한 이유 때문에 GET을 통해서 데이터를 받아오고 GET에서 받은 부분 중 원본 + 수정본을 같이 PUT으로 보낸다. 
+
+참고) [https://www.inflearn.com/questions/93071](https://www.inflearn.com/questions/93071)
+
+ORM? 
+객체와 관계형 데이터베이스의 데이터를 자동으로 매핑(연결)해주는 것
+[https://gmlwjd9405.github.io/2019/02/01/orm.html](https://gmlwjd9405.github.io/2019/02/01/orm.html)
+
+DTO? 
+계층 간 데이터 교환을 하기 위해 사용하는 객체로, DTO는 로직을 가지지 않는 순수한 데이터 객체(getter & setter 만 가진 클래스)
+ [https://melonicedlatte.com/2021/07/24/231500.html](https://melonicedlatte.com/2021/07/24/231500.html)
+
+Parsing?
+[https://na27.tistory.com/230](https://na27.tistory.com/230)
