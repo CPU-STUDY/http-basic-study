@@ -1,0 +1,250 @@
+#3. HTTP 기본
+## HTTP
+HTTP 메시지에 모든 것을 전송 한다. ex) HTML, TEXT, 이미지, 영상, 파일, JSON, XML 등등…
+거의 모든 형태의 데이터를 전송 할 수 있다.
+
+### 기반 프로토콜
+TCP : HTTP/1.1, HTTP/2
+UDP : HTTP/3
+
+### HTTP의 특징
+- 클라이언트 서버 구조
+- 무상태 프로토콜 ( Stateless ), 비연결성
+- HTTP 메시지 → 송·수신 할때 사용
+- 단순함, 확장 가능
+
+### 클라이언트 서버
+요청, 응답 구조로 이루어진다.
+클라이언트는 서버에게 요청을 보내고, 응답을 기다린다.
+서버는 클라이언트의 요청에 대한 결과를 응답한다.
+이러한 구조 덕분에 클라이언트와 서버는 독립적으로 진화가 가능하다.
+
+### 무상태 프로토콜( Stateless )
+서버가 클라이언트의 상태를 보존하지 않는다.
+장점: 서버 확장성 높음 ( 스케일 아웃 )
+단점: 클라이언트가 서버에 보내는 메시지의 용량이 크다.
+
+### Stateful, Stateless 차이점
+Stateful: 중간에 받는 서버가 바뀌면 안된다. ( 만약 바뀌게 되면 미리 다른 서버에게 상태를 알려줘야함)
+
+Stateless: 중간에 서버가 바뀌어도 된다. ( 클라이언트가 상태 정보를 같이 보내기 때문 )
+클라이언트의 요청이 갑자기 증가하여도 서버를 대거 투입하여 대응 할 수 있다.
+Stateless는 응답 서버를 쉽게 바꿀 수 있기 때문에 서버를 무한히 증설할 수 있다.
+
+### Stateless의 한계
+실무에서 한계가 존재한다.
+무상태로 설계되지 않는 것이 존재함 ex) 로그인 기능
+로그인 한 사용자의 경우 로그인 한 상태를 서버에 유지 해야한다. 
+일반적으로 브라우저 쿠키, 서버 세션 등을 사용하여 상태 유지를 한다.
+
+최대한 무상태로 설계를  하는데 어쩔수 없는 경우에는 최소한으로 상태 유지로 설계한다.
+
+### 비연결성
+비연결성: 클라이언트와 서버가 요청, 응답을 하면 바로 연결을 끊는 것
+HTTP는 연결을 유지하지 않는다.
+이 때문에 많은 사람들이 서비스를 사용하여도 실제 서버에서 동시에 처리하는 요청의 양은 매우 작아진다.
+서버 자원을 효울적으로 사용할 수 있게 한다.
+
+### 비연결성의 한계
+요청을 할 때 마다 TCP 3 way handshake를 해야되서 불필요한 시간이 추가된다.
+웹 브라우저로 사이트에 요청하면 HTML 뿐만 아니라 자바스크립트, css, 이미지 등 많은 자원들이 다운로드 되는데 이걸 모두 받을 때 마다 TCP/IP 연결을 해야 되서 시간이 추가 된다.
+만약 이벤트 같이 동시간에 대용량 트래픽이 발생하는 경우에는 비연결성으로 설계가 되었다 해도 소용이 없다. 그래서 Stateless가 중요하다
+
+### 극복
+HTTP 지속 연결 ( Persistent Connections ) 로 문제를 해결 하였다.
+불필요한 연결, 종료 시간을 단축 하였다.
+
+## HTTP 메시지
+
+                                                                                    HTTP/1.1 200 OK
+                                                                                    Content-Type: text/html;charset=UTF-8
+                                                                                    Content-Length: 3423
+                                                                                    
+GET /search?q=hello&hl=ko HTTP/1.1                                                  <html>
+Host: www.google.com                                                                <body>...</body>
+                                                                                    </html>
+
+ex)     HTTP 요청 메시지                                                              HTTP 응답 메시지
+
+### HTTP 메시지 구조
+
+| Start-line 시작 라인 |
+| Header 헤더 |
+| Empty line 공백 라인 ( CRLF )  필수 |
+| Message Body |
+
+ 요청 메시지도 message body를 가질 수 있다.
+
+### 시작 라인     ex) GET /search?q=hello&hl=ko HTTP/1.1
+### 요청 메시지
+request-line = method SP ( 공백 ) request-target SP HTTP-version CRLF ( 엔터 )
+
+- method → GET
+- request-target → search?q=hello&hl=ko
+- HTTP-version → HTTP/1.1
+
+HTTP 메서드 ( method )**  ex) **GET** /search?q=hello&hl=ko HTTP/1.1
+종류: GET, POST, PUT, DELETE…
+서버가 수행해야 하는 동작을 지정한다.
+ex) GET → 리소스 조회 ( 주세요 )
+    POST → 요청 내역 처리 ( 처리 해주세요 )
+
+요청 대상 ( request-target )**  ex) GET **/search?q=hello&hl=ko** HTTP/1.1
+형식: absolute-path[?query] ( 절대경로[?쿼리] )
+
+HTTP 버전  ex) GET /search?q=hello&hl=ko **HTTP/1.1**
+말 그대로 HTTP 버전을 나타낸다.
+
+### 응답 메시지  ex) HTTP/1.1 200 OK
+status-line = HTTP-version SP status-code SP reason_phrase CRLF
+- HTTP-version → HTTP/1.1
+- status-code → 200 ( 요청 성공, 실패를 나타냄 )
+      ex) 200 → 성공
+          400 → 클라이언트 요청 오류
+          500 → 서버 내부 오류
+- reason_phrase → OK ( 사람이 이해할 수 있는 짧은 상태 코드(status-code) 설명 글 )
+
+### HTTP 헤더
+header-field = field-name: OWS field-value OWS ( OWS : 띄어쓰기 허용한다는 의미 )
+field-name은 대·소문자 구분 안한다.
+ex) Host: [www.google.com](http://www.google.com/)
+ex) Content-Type: text/html;charset=UTF-8
+    Content-Length: 3423
+
+용도
+HTTP 메시지 전송에 필요한 모든 부가 정보를 가진다.
+ex) 메시지 바디의 내용, 메시지 바디의 크기, 압축, 인증, 요청 클라이언트(브라우저) 정보,
+서버 애플리케이션 정보, 캐시 관리 정보...
+ 필요시 임의의 헤더 추가 가능하다.
+
+### Message Body
+
+실제로 전송할 데이터가 들어있다.
+ex) HTML 문서, 이미지, 영상, JSON … byte로 표현 가능한 모든 데이터
+
+HTTP 메서드
+주요 메서드
+GET: 리소스 조회 ( 주세요 )
+POST: 요청 데이터 처리, 주로 등록에 사용
+PUT: 리소스 대체, 해당 리소스가 없으면 생성 ( 파일을 폴더에 넣는 것과 유사 )
+PATCH: 리소스 부분 변경
+DELETE: 리소스 삭제
+
+기타 메서드
+HEAD: GET과 동일하지만 상태 줄과 헤더만 반환 ( Message Body 빼고 주세요 )
+OPTION: 대상 리소스에 대한 통신 가능 옵션(메서드) 설명 ( 주로 CORS 에서 사용 ) 
+
+GET ex) GET /search?q=hello&hl=ko HTTP/1.1
+
+리소스 조회
+서버에 전달하고 싶은 데이터는 query를 통해서 전달
+메시지 바디를 통해서 데이터를 전달할 수 있지만, 지원하지 않는 곳이 많아서 권장 X
+
+POST
+ex)
+POST /members HTTP/1.1
+Content-Type: application/json
+
+{
+"username": "hello",
+"age": 20
+}
+
+요청 데이터 처리
+클라이언트는 리소스의 정확한 위치를 모름 ( PUT과 차이점 )
+message body를 통해서 요청 데이터 전달
+서버는 요청 데이터를 처리 (메시지 바디를 통해서 들어온 데이터를 처리하는 모든 기능을 수행)
+주로 신규 리소스 등록, 프로세스 처리에 사용
+POST가 요청 데이터를 어떻게 처리하는가는 리소스마다 따로 정해야함 ( 정해진게 없다 )
+정리
+새 리소스 생성 ( 등록 )
+요청 데이터 처리 ( 프로세스를 처리해야 하는 경우, 프로세스의 상태가 변하는 경우 )
+컨트롤 URI를 사용하는 경우 ex) POST /orders/{orderId}/start-delivery 
+다른 메서드로 처리하기 애매한 경우 ex)  JSON으로 조회 데이터를 넘겨야 하는데 GET 메서드를 사용하기 어려운 경우
+∴ POST 메서드는 모든 걸 할 수 있다. 하지만 데이터 조회할 때는 캐싱 때문에 GET을 사용하는 게 좋고, 데이터 변경, 프로세스 진행 등 어쩔 수 없는 경우에는 POST를 사용하는 게 좋다.
+
+PUT
+ex)
+PUT /members/100 HTTP/1.1
+Content-Type: application/json
+
+{
+ "username": "hello",
+ "age": 20
+}
+
+리소스를 대체 ( 폴더에 파일을 넣었을 때와 유사 )
+리소스가 없으면 생성
+리소스가 있으면 덮어버림
+클라이언트가 리소스의 위치를 알고 URI 지정 ( POST와 차이점 )
+
+PATCH
+ex)
+PATCH /members/100 HTTP/1.1
+Content-Type: application/json
+
+{
+"age": 50 
+}
+
+리소스 부분 변경
+
+DELETE
+ex)
+DELETE /members/100 HTTP/1.1
+Host: localhost:8080
+
+리소스 제거
+
+HTTP 메서드의 속성
+안전, 멱등, 캐시 가능
+
+안전(Safe)
+메서드를 호출해도 리소스가 변하지 않는다. ( 변경이 일어나지 않는 것 )
+ex) GET
+
+멱등(Idempotent)
+f(f(x)) = f(x)
+한 번 호출하든 두 번 호출하든 몇 번을 호출해도 결과가 똑같다.
+GET, PUT, DELETE → 멱등
+POST → 멱등 X
+자동 복구 메커니즘에 활용 된다.
+ex) 서버가 TIMEOUT 등으로 정상 응답을 주지 못했을 때 클라이언트가 같은 요청을 다시 해도 되는지 판단 근거 ( 멱등은 몇 번을 호출해도 결과가 똑같아서 재시도 해도 괜찮지만 멱등이 아닌 것은 재시도 하면 결과가 바뀌기 때문에 하면 안됨 )
+
+캐시가능(Cacheable)
+응답 결과 리소스를 캐시해서 사용할 수 있는가?
+GET, HEAD, POST, PATCH 캐시 가능
+실제로는 GET, HEAD 정도만 캐시로 사용
+POST, PATCH는 캐시로 구현하기 쉽지 않음
+
+세션 3 노션 링크
+https://spotted-oatmeal-52f.notion.site/3-HTTP-35a6534a1ad541a1880209623636284a
+세션 4 노션 링크
+https://spotted-oatmeal-52f.notion.site/4-HTTP-b6a5ae88028c4e5893e511003c96887e
+
+
+## 번외) PATCH 메서드의 불안정성?
+PATCH 메서드를 사용하게 되면 리소스 부분 변경이 가능하다. 
+예를 들어
+{
+“name”: “홍길동”
+"age": 50 
+}
+이라는 리소스에서 age를 20으로 바꾸려면 이렇게 보내면 된다. 
+{
+“age”: 20
+}
+그런데 ORM을 쓴다거나 요청 mapping에서 DTO라는 객체를 받게 되면, name에 해당하는 필드가 null로 적용된다. 이는 kotlin, java등 여러 언어에서 parsing할 때 나오는 현상이다. 이러한 이유 때문에 GET을 통해서 데이터를 받아오고 GET에서 받은 부분 중 원본 + 수정본을 같이 PUT으로 보낸다. 
+
+참고) [https://www.inflearn.com/questions/93071](https://www.inflearn.com/questions/93071)
+
+ORM? 
+객체와 관계형 데이터베이스의 데이터를 자동으로 매핑(연결)해주는 것
+[https://gmlwjd9405.github.io/2019/02/01/orm.html](https://gmlwjd9405.github.io/2019/02/01/orm.html)
+
+DTO? 
+계층 간 데이터 교환을 하기 위해 사용하는 객체로, DTO는 로직을 가지지 않는 순수한 데이터 객체(getter & setter 만 가진 클래스)
+ [https://melonicedlatte.com/2021/07/24/231500.html](https://melonicedlatte.com/2021/07/24/231500.html)
+
+Parsing?
+[https://na27.tistory.com/230](https://na27.tistory.com/230)
